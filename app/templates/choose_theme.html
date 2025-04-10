@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Výběr tématu</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header class="user-header">
+        <p>{{ user.username }}, score: {{ user.score }}</p>
+    </header> 
+    <h2>Vyber téma:</h2>
+    <ul>
+    {% for t in themes %}
+    <li>
+        {% if t == "animals" %}
+            <a class="theme-button" href="{{ url_for('main_bp.play', theme_name=t) }}">Zvířata</a>
+        {% elif t == "colors" %}
+            <a class="theme-button" href="{{ url_for('main_bp.play', theme_name=t) }}">Barvy</a>
+        {% elif t == "fruits_vegetables" %}
+            <a class="theme-button" href="{{ url_for('main_bp.play', theme_name=t) }}">Ovoce a zelenina</a>
+        {% else %}
+            <a class="theme-button" href="{{ url_for('main_bp.play', theme_name=t) }}">{{ t }}</a>
+        {% endif %}
+      </li>
+    {% endfor %}
+    </ul>
+    <p><a href="{{ url_for('auth_bp.logout') }}">Odhlásit se</a></p>
+</body>
+</html>

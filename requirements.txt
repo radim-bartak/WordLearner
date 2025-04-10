@@ -1,0 +1,6 @@
+Flask
+Flask_SQLAlchemy
+numpy
+Pillow
+tensorflow
+scikit-learn

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Přihlášení</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Přihlášení</h1>
+    <form method="post">
+        <label>Uživatelské jméno:</label>
+        <input type="text" name="username">
+        <br>
+        <label>Heslo:</label>
+        <input type="password" name="password">
+        <br>
+        <input type="submit" value="Přihlásit">
+    </form>
+</body>
+</html>

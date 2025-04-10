@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hra: {{ theme }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="user-header">
+    <p>{{ user.username }}, score: {{ user.score }}</p>
+  </header> 
+  <main>
+    
+    {% if theme == "animals" %}
+      <h1>Téma: Zvířata</h1>
+    {% elif theme == "colors" %}
+      <h1>Téma: Barvy</h1>   
+    {% elif theme == "fruits_vegetables" %}
+      <h1>Téma: Ovoce a zelenina</h1>
+    {% else %}
+      <h1>Téma: {{ theme }}</h1>
+    {% endif %}
+
+    {% if theme == "colors" %}
+      <div class="color-box" style="background-color: {{ asset }};"></div>
+    {% else %}
+      <img src="{{ url_for('static', filename='images/' ~ asset) }}" alt="obrázek zvířete">
+    {% endif %}
+    
+    <h3>Nakresli název na plátno:</h3>
+    <canvas id="drawCanvas" width="800" height="300" style="border:1px solid #000000;"></canvas>
+    <br>
+    <div class="button-container">
+      <button onclick="checkWord()">Zkontrolovat</button>
+      <button onclick="clearCanvas()">Vyčistit plátno</button>
+      <button id=ersBtn onclick="activateEraser()">Guma</button>
+      <button id="penBtn" onclick="activatePen()" style="display:none;">Štětec</button>
+    </div>
+    <p id="result"></p>
+
+    <script>
+      let canvas = document.getElementById('drawCanvas');
+      let ctx = canvas.getContext('2d');
+
+      // Initialize canvas with white background
+      ctx.fillStyle = "white";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      let drawing = false;
+      let isErasing = false;
+
+      canvas.addEventListener('mousedown', e => {
+          drawing = true;
+      });
+      canvas.addEventListener('mouseup', e => {
+          drawing = false;
+      });
+      canvas.addEventListener('mousemove', e => {
+          if(drawing){
+              // Switch fill style based on current mode
+              ctx.fillStyle = isErasing ? 'white' : 'black';
+              ctx.beginPath();
+              ctx.arc(e.offsetX, e.offsetY, 7, 0, 2 * Math.PI);
+              ctx.fill();
+          }
+      });
+
+      function clearCanvas() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = "white";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      function activateEraser() {
+          isErasing = true;
+          
+          let penBtn = document.getElementById('penBtn');
+          penBtn.style.display = 'inline-block';
+
+          let ersBtn = document.getElementById('ersBtn');
+          ersBtn.style.display = 'none';
+      }
+
+      function activatePen() {
+          isErasing = false;
+          
+          let penBtn = document.getElementById('penBtn');
+          penBtn.style.display = 'none';
+
+          let ersBtn = document.getElementById('ersBtn');
+          ersBtn.style.display = 'inline-block';
+      }
+
+      function highlightDifferences(correct, recognized) {
+          let result = '';
+          for (let i = 0; i < recognized.length; i++) {
+              let corrChar = correct[i] || '';
+              let recChar = recognized[i];
+              if(recChar !== corrChar){
+                  result += `<span style="background-color:yellow;">${recChar}</span>`;
+              } else {
+                  result += recChar;
+              }
+          }
+          return result;
+      }
+
+      async function checkWord(){
+          let imageData = canvas.toDataURL('image/png');
+          let resp = await fetch('/check-word', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ image_data: imageData })
+          });
+          let data = await resp.json();
+          if(data.is_correct){
+              document.getElementById('result').innerHTML = `<span style="color:green;">SPRÁVNĚ! ${data.recognized_word} - Skóre: ${data.score}</span>`;
+              setTimeout(() => { window.location.reload(); }, 1500);
+          } else {
+              document.getElementById('result').innerHTML = `<span style="color:red;">ŠPATNĚ! ${highlightDifferences(data.correct_word, data.recognized_word)}</span>`;
+          }
+      }
+    </script>
+
+    <p><a href="{{ url_for('main_bp.choose_theme') }}">Zpět</a></p>
+  </main>
+</body>
+</html>
